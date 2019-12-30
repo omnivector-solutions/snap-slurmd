@@ -171,7 +171,7 @@ parts:
 
   wrappers:
     plugin: dump
-    source: src/slurmctld/
+    source: src/slurmd/
     source-type: local
 
   common:
