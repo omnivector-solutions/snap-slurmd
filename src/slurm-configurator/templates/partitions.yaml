@@ -1,0 +1,3 @@
+debug-partition: |
+  PartitionName=debug Nodes=dev[0-25] Default=YES
+

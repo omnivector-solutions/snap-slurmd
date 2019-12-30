@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import sys
+
+from pathlib import Path
+
+import yaml
+
+from jinja2 import Environment, FileSystemLoader
+
+
+yaml.warnings({'YAMLLoadWarning': False})
+
+
+def get_parsed_args(argv):
+    """Create argument parser and return cli args.
+    """
+    parser = argparse.ArgumentParser(
+        description="Create SLURM Config"
+    )
+    parser.add_argument(
+        "--host-yaml",
+        type=argparse.FileType('r'),
+        dest="host_yaml",
+        required=False,
+        help="Slurm host config as yaml file."
+    )
+    parser.add_argument(
+        "--auth-yaml",
+        type=argparse.FileType('r'),
+        dest="auth_yaml",
+        required=False,
+        help="Slurm auth config as yaml file."
+    )
+    parser.add_argument(
+        "--general-yaml",
+        type=argparse.FileType('r'),
+        dest="general_yaml",
+        required=False,
+        help="Slurm general config as yaml file."
+    )
+    parser.add_argument(
+        "--nodes-yaml",
+        type=argparse.FileType('r'),
+        dest="nodes_yaml",
+        required=False,
+        help="Nodes config as a yaml file."
+    )
+    parser.add_argument(
+        "--partitions-yaml",
+        type=argparse.FileType('r'),
+        dest="partitions_yaml",
+        required=False,
+        help="Partitions config as a yaml file."
+    )
+    return parser.parse_args(argv)
+
+
+def render_slurm_conf(ctxt: 'dict'=None):
+
+    if not ctxt:
+        ctxt = {}
+
+    templates_path = os.path.join(os.getenv('SNAP'), 'templates')
+    env = Environment(loader=FileSystemLoader(templates_path))
+    return env.get_template('slurm.conf').render(ctxt=ctxt)
+
+
+def main(argv=sys.argv[1:]):
+    args = get_parsed_args(argv)
+
+    ctxt = {}
+    ctxt['auth_config'] = {}
+    ctxt['host_config'] = {}
+    ctxt['general_config'] = {}
+    ctxt['nodes_config'] = {}
+    ctxt['partitions_config'] = {}
+
+    slurm_configurator_base = Path(
+        f"{os.environ['SNAP_COMMON']}/etc/slurm-configurator"
+    )
+
+    # Auth YAML
+    if args.auth_yaml:
+        auth_yaml = args.auth_yaml.read()
+    else:
+        auth_yaml = slurm_configurator_base / 'auth.yaml'
+        auth_yaml = auth_yaml.read_text()
+    for k, v in yaml.load(auth_yaml).items():
+        ctxt['auth_config'][k] = v
+
+    # HOST YAML
+    if args.host_yaml:
+        host_yaml = args.host_yaml.read()
+    else:
+        host_yaml = slurm_configurator_base / 'host.yaml'
+        host_yaml = host_yaml.read_text()
+    for k, v in yaml.load(host_yaml).items():
+        ctxt['host_config'][k] = v
+
+    # General YAML
+    if args.general_yaml:
+        general_yaml = args.general_yaml.read()
+    else:
+        general_yaml = slurm_configurator_base / 'general.yaml'
+        general_yaml = general_yaml.read_text()
+    for k, v in yaml.load(general_yaml).items():
+        ctxt['general_config'][k] = v
+
+    # Nodes YAML
+    if args.nodes_yaml:
+        nodes_yaml = args.nodes_yaml.read()
+    else:
+        nodes_yaml = slurm_configurator_base / 'nodes.yaml'
+        nodes_yaml = nodes_yaml.read_text()
+    for k, v in yaml.load(nodes_yaml).items():
+        ctxt['nodes_config'][k] = v
+
+    # Partitions YAML
+    if args.partitions_yaml:
+        partitions_yaml = args.nodes_yaml.read()
+    else:
+        partitions_yaml = slurm_configurator_base / 'partitions.yaml'
+        partitions_yaml = partitions_yaml.read_text()
+    for k, v in yaml.load(partitions_yaml).items():
+        ctxt['partitions_config'][k] = v
+
+    print(render_slurm_conf(ctxt=ctxt))
+
+
+if __name__ == "__main__":
+    main()

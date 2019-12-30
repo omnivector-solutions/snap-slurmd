@@ -1,0 +1,33 @@
+ClusterName: "SLURM-SNAP-LOCAL"
+
+SlurmctldPort: 6817
+
+SlurmUser: "root"
+
+AccountingStorageType: "accounting_storage/none"
+
+CheckpointType: "checkpoint/none"
+
+DefaultStorageType: "none"
+
+MailProg: "/snap/slurmctld/current/usr/bin/mail.mailutils"
+
+SlurmctldPidFile: "/tmp/slurmctld.pid"
+
+SlurmctldLogFile: "/var/snap/slurmctld/common/log/slurmctld.log"
+
+StateSaveLocation: "/var/snap/slurmctld/common/var/spool/slurm/ctld"
+
+PluginDir: "/snap/slurmctld/current/lib/slurm"
+
+SchedulerType: "sched/backfill"
+
+SwitchType: "switch/none"
+
+TmpFS: "/tmp"
+
+WaitTime: 30
+KillWait: 30
+MaxJobCount: 10000
+MinJobAge: 3600
+ReturnToService: 0

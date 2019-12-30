@@ -1,0 +1,186 @@
+name: slurmd
+version: git
+summary: The compute node daemon for Slurm.
+description: |
+  Slurmd is the compute node daemon of Slurm. It monitors all tasks running on the compute node , accepts work (tasks), launches tasks, and kills running tasks upon request.
+
+grade: stable
+confinement: strict
+
+base: core18
+
+passthrough:
+  system-usernames:
+    snap_daemon: shared
+
+plugs:
+  munged-socket:
+    interface: content
+    content: socket-directory
+    target: $SNAP_DATA
+
+apps:
+  slurmd:
+    command: bin/slurmd
+    daemon: simple
+    restart-condition: always
+    plugs: [network, network-bind]
+
+  slurm-configurator:
+    command: bin/slurm-configurator
+
+parts:
+  slurm:
+    after:
+      - json-c
+      - libcurl
+      - glib
+    plugin: dump
+    source: https://download.schedmd.com/slurm/slurm-19.05.4.tar.bz2
+    build-packages:
+      - libhdf5-dev
+      - python-dev
+      - libreadline-dev
+      - liblua5.3-dev
+      - libbz2-dev
+      - bzip2
+      - mysql-client
+      - libmysqlclient-dev
+      - liblz4-dev
+      - libpmi1-pmix
+      - freeipmi
+      - rrdtool
+      - libncurses5-dev
+      - libmunge-dev
+      - libmunge2
+    stage-packages:
+      - liblua5.3-dev
+      - libmysqlclient-dev
+      - libaec0
+      - libhdf5-100
+      - libsz2
+      - mailutils
+      - libmunge-dev
+      - libmunge2
+    stage:
+      - bin/
+      - share/
+      - sbin/
+      - include/
+      - lib/
+      - etc/
+      - usr/
+    prime:
+      - bin/
+      - share/
+      - sbin/
+      - include/
+      - lib/
+      - etc/
+      - usr/
+    override-build: |
+      snapcraftctl build
+
+      #LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib:$SNAPCRAFT_STAGE/opt:$SNAPCRAFT_STAGE \
+
+      ./configure --enable-threading \
+          --with-json=$SNAPCRAFT_STAGE \
+          --with-libcurl=$SNAPCRAFT_STAGE/opt/curl \
+          --prefix=$SNAPCRAFT_PART_INSTALL \
+          --localstatedir=/var/snap/slurmdbd/common/etc/slurm
+      make -j9
+      make install
+      ldconfig -n /snap/slurmdbd/current/lib/slurm/
+
+  glib:
+    plugin: dump
+    source: https://github.com/GNOME/glib.git
+    source-type: git
+    source-depth: 1
+    source-tag: 2.62.2
+    build-packages:
+      - pkg-config
+      - libmount-dev
+      - python3
+      - python3-pip
+      - python3-setuptools
+      - python3-wheel
+      - ninja-build
+    stage:
+      - -README
+    prime:
+      - -*
+    override-build: |
+      snapcraftctl build
+      pip3 install meson
+      meson _build
+      ninja -C _build
+      ninja -C _build install
+
+  json-c:
+    plugin: cmake
+    configflags:
+      - "-DBUILD_SHARED_LIBS=On"
+    source: https://github.com/json-c/json-c.git
+    source-type: git
+    source-depth: 1
+    source-tag: json-c-0.13.1-20180305
+    build-packages:
+      - libtool
+      - g++
+    stage:
+      - include/
+    prime:
+      - -*
+
+  libcurl:
+    plugin: dump
+    source: https://github.com/curl/curl.git
+    source-type: git
+    source-depth: 1
+    source-tag: curl-7_62_0
+    build-packages:
+      - libtool
+      - libssl-dev
+      - autoconf
+      - make
+    stage:
+      - opt/
+    prime:
+      - -*
+    override-build: |
+      snapcraftctl build
+      ./buildconf
+      ./configure --with-ssl --prefix=$SNAPCRAFT_PART_INSTALL/opt/curl/
+      make -j9
+      make install
+
+  slurm-configurator:
+    plugin: dump
+    source: src/slurm-configurator/
+    source-type: local
+    build-packages:
+      - python3-pip
+      - python3-setuptools
+    stage-packages:
+      - python3-pip
+      - python3-setuptools
+    override-pull: |
+      snapcraftctl pull
+      pip3 install jinja2 pyaml
+
+  wrappers:
+    plugin: dump
+    source: src/slurmctld/
+    source-type: local
+
+  common:
+    plugin: dump
+    source: src/common/
+    source-type: local
+
+  hooks:
+    plugin: dump
+    source: src/hooks/
+    organize:
+      bin/: snap/hooks/
