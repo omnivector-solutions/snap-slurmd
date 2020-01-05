@@ -87,10 +87,10 @@ parts:
           --with-json=$SNAPCRAFT_STAGE \
           --with-libcurl=$SNAPCRAFT_STAGE/opt/curl \
           --prefix=$SNAPCRAFT_PART_INSTALL \
-          --localstatedir=/var/snap/slurmdbd/common/etc/slurm
+          --localstatedir=/var/snap/slurmd/common/etc/slurm
       make -j9
       make install
-      ldconfig -n /snap/slurmdbd/current/lib/slurm/
+      ldconfig -n /snap/slurmd/current/lib/slurm/
 
   glib:
     plugin: dump

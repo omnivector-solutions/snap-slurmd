@@ -12,7 +12,7 @@ export SLURM_CONF=$SNAP_COMMON/etc/slurm/slurm.conf
 
 SLURMCTLD_INIT_CONFIG_FILE=$SNAP/templates/slurm.conf
 SLURMCTLD_TMP_CONFIG_FILE=/tmp/slurm.conf
-SLURMCTLD_LOG=$SNAP_COMMON/log/slurmctld.log
+SLURMCTLD_LOG=$SNAP_COMMON/log/slurmd.log
 HOSTNAME=`hostname -s`
 
 CONFIGURATOR_DIR=$SNAP_COMMON/etc/slurm-configurator

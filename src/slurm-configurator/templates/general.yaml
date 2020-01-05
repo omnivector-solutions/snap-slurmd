@@ -1,5 +1,6 @@
 ClusterName: "SLURM-SNAP-LOCAL"
 
+SlurmdPort: 6818
 SlurmctldPort: 6817
 
 SlurmUser: "root"
@@ -10,15 +11,14 @@ CheckpointType: "checkpoint/none"
 
 DefaultStorageType: "none"
 
-MailProg: "/snap/slurmctld/current/usr/bin/mail.mailutils"
+SlurmdLogFile: "/var/snap/slurmd/common/log/slurmd_%c.log"
+SlurmdPidFile: "/tmp/slurmd_%c.pid"
 
-SlurmctldPidFile: "/tmp/slurmctld.pid"
+MailProg: "/snap/slurmd/current/usr/bin/mail.mailutils"
 
-SlurmctldLogFile: "/var/snap/slurmctld/common/log/slurmctld.log"
+SlurmdSpoolDir: "/var/snap/slurmd/common/var/spool/slurm/d"
 
-StateSaveLocation: "/var/snap/slurmctld/common/var/spool/slurm/ctld"
-
-PluginDir: "/snap/slurmctld/current/lib/slurm"
+PluginDir: "/snap/slurmd/current/lib/slurm"
 
 SchedulerType: "sched/backfill"
 
